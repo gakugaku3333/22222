@@ -494,6 +494,147 @@
             cursor: not-allowed;
             transform: none;
         }
+
+        /* 新しいゲーム用スタイル */
+        .click-target {
+            width: 150px;
+            height: 150px;
+            font-size: 80px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            user-select: none;
+        }
+
+        .click-target:active {
+            transform: scale(0.9);
+        }
+
+        .floating-star {
+            position: absolute;
+            font-size: 40px;
+            cursor: pointer;
+            user-select: none;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .bubble-item {
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            animation: bubbleFloat 5s ease-in-out infinite;
+        }
+
+        @keyframes bubbleFloat {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(10px, -10px); }
+            50% { transform: translate(-10px, -20px); }
+            75% { transform: translate(-15px, -10px); }
+        }
+
+        .match3-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+
+        .match3-cell {
+            aspect-ratio: 1;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .match3-cell:hover {
+            transform: scale(1.1);
+        }
+
+        .match3-cell.selected {
+            background: #fffacd;
+            transform: scale(1.15);
+        }
+
+        .match3-cell.matched {
+            animation: matchPulse 0.5s ease;
+        }
+
+        @keyframes matchPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        .drawing-canvas {
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            background: white;
+            cursor: crosshair;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .color-palette {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .color-swatch {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .color-swatch:hover {
+            transform: scale(1.2);
+        }
+
+        .color-swatch.active {
+            border-color: #333;
+            transform: scale(1.15);
+        }
+
+        .tool-btn {
+            padding: 10px 20px;
+            margin: 5px;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .tool-btn:hover {
+            background: #667eea;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -648,6 +789,64 @@
             <div id="memoryField" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; max-width: 600px; margin: 30px auto;"></div>
             <button class="back-btn" onclick="endMiniGame()">やめる</button>
         </div>
+
+        <!-- クリックレースゲーム -->
+        <div id="clickGameScreen" class="hidden">
+            <h1>👆 クリッククリック</h1>
+            <div style="font-size: 24px; margin: 20px 0;">
+                クリック: <span id="clickCount">0</span>かい | じかん: <span id="clickTime">10</span>びょう
+            </div>
+            <div style="display: flex; justify-content: center; align-items: center; min-height: 300px;">
+                <div id="clickTarget" class="click-target">👆</div>
+            </div>
+            <button class="back-btn" onclick="endMiniGame()">やめる</button>
+        </div>
+
+        <!-- スターキャッチゲーム -->
+        <div id="starGameScreen" class="hidden">
+            <h1>⭐ ほしあつめ</h1>
+            <div style="font-size: 24px; margin: 20px 0;">
+                スコア: <span id="starScore">0</span> | じかん: <span id="starTime">30</span>びょう
+            </div>
+            <div id="starField" style="position: relative; height: 500px; max-width: 600px; margin: 30px auto; background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 100%); border-radius: 20px; overflow: hidden;"></div>
+            <button class="back-btn" onclick="endMiniGame()">やめる</button>
+        </div>
+
+        <!-- バブルタップゲーム -->
+        <div id="bubbleGameScreen" class="hidden">
+            <h1>🫧 バブルわり</h1>
+            <div style="font-size: 24px; margin: 20px 0;">
+                スコア: <span id="bubbleScore">0</span> | じかん: <span id="bubbleTime">30</span>びょう
+            </div>
+            <div id="bubbleField" style="position: relative; height: 500px; max-width: 600px; margin: 30px auto; background: linear-gradient(to bottom, #E0F7FA 0%, #B2EBF2 100%); border-radius: 20px; overflow: hidden;"></div>
+            <button class="back-btn" onclick="endMiniGame()">やめる</button>
+        </div>
+
+        <!-- マッチ3ゲーム -->
+        <div id="match3GameScreen" class="hidden">
+            <h1>🎯 えあわせ</h1>
+            <div style="font-size: 24px; margin: 20px 0;">
+                スコア: <span id="match3Score">0</span> | のこり: <span id="match3Moves">20</span>てすう
+            </div>
+            <div id="match3Grid" class="match3-grid"></div>
+            <button class="back-btn" onclick="endMiniGame()">やめる</button>
+        </div>
+
+        <!-- お絵描きツール -->
+        <div id="drawGameScreen" class="hidden">
+            <h1>🖍️ おえかき</h1>
+            <div class="color-palette" id="colorPalette"></div>
+            <div style="text-align: center; margin: 20px 0;">
+                <button class="tool-btn" onclick="changeDrawSize('small')">ほそい</button>
+                <button class="tool-btn" onclick="changeDrawSize('medium')">ふつう</button>
+                <button class="tool-btn" onclick="changeDrawSize('large')">ふとい</button>
+                <button class="tool-btn" onclick="clearCanvas()">ぜんぶけす</button>
+            </div>
+            <div style="text-align: center;">
+                <canvas id="drawCanvas" class="drawing-canvas" width="600" height="400"></canvas>
+            </div>
+            <button class="back-btn" onclick="endMiniGame()">もどる</button>
+        </div>
     </div>
 
     <script>
@@ -728,7 +927,12 @@
             { id: 'game_balloon', name: 'ふうせんわり', icon: '🎈', price: 15, type: 'game' },
             { id: 'game_catch', name: 'フルーツキャッチ', icon: '🍎', price: 20, type: 'game' },
             { id: 'game_color', name: 'いろあわせ', icon: '🎨', price: 15, type: 'game' },
-            { id: 'game_memory', name: 'しんけいすいじゃく', icon: '🃏', price: 25, type: 'game' }
+            { id: 'game_memory', name: 'しんけいすいじゃく', icon: '🃏', price: 25, type: 'game' },
+            { id: 'game_click', name: 'クリッククリック', icon: '👆', price: 5, type: 'game' },
+            { id: 'game_star', name: 'ほしあつめ', icon: '⭐', price: 18, type: 'game' },
+            { id: 'game_bubble', name: 'バブルわり', icon: '🫧', price: 12, type: 'game' },
+            { id: 'game_match3', name: 'えあわせ', icon: '🎯', price: 30, type: 'game' },
+            { id: 'game_draw', name: 'おえかき', icon: '🖍️', price: 8, type: 'game' }
         ];
 
         // ゲームデータの初期化
@@ -984,6 +1188,11 @@
             document.getElementById('catchGameScreen').classList.add('hidden');
             document.getElementById('colorGameScreen').classList.add('hidden');
             document.getElementById('memoryGameScreen').classList.add('hidden');
+            document.getElementById('clickGameScreen').classList.add('hidden');
+            document.getElementById('starGameScreen').classList.add('hidden');
+            document.getElementById('bubbleGameScreen').classList.add('hidden');
+            document.getElementById('match3GameScreen').classList.add('hidden');
+            document.getElementById('drawGameScreen').classList.add('hidden');
         }
 
         // ショップアイテムを描画
@@ -1148,6 +1357,26 @@
                 case 'game_memory':
                     document.getElementById('memoryGameScreen').classList.remove('hidden');
                     startMemoryGame();
+                    break;
+                case 'game_click':
+                    document.getElementById('clickGameScreen').classList.remove('hidden');
+                    startClickGame();
+                    break;
+                case 'game_star':
+                    document.getElementById('starGameScreen').classList.remove('hidden');
+                    startStarGame();
+                    break;
+                case 'game_bubble':
+                    document.getElementById('bubbleGameScreen').classList.remove('hidden');
+                    startBubbleGame();
+                    break;
+                case 'game_match3':
+                    document.getElementById('match3GameScreen').classList.remove('hidden');
+                    startMatch3Game();
+                    break;
+                case 'game_draw':
+                    document.getElementById('drawGameScreen').classList.remove('hidden');
+                    startDrawGame();
                     break;
             }
         }
@@ -1582,6 +1811,415 @@
                 popup.remove();
                 endMiniGame();
             }, 3000);
+        }
+
+        // クリックレースゲーム
+        let clickCount = 0;
+        let clickTimeLeft = 10;
+        let clickInterval = null;
+
+        function startClickGame() {
+            clickCount = 0;
+            clickTimeLeft = 10;
+            document.getElementById('clickCount').textContent = clickCount;
+            document.getElementById('clickTime').textContent = clickTimeLeft;
+
+            const target = document.getElementById('clickTarget');
+            target.onclick = () => {
+                clickCount++;
+                document.getElementById('clickCount').textContent = clickCount;
+                target.style.animation = 'none';
+                setTimeout(() => {
+                    target.style.animation = 'bounce 0.3s ease';
+                }, 10);
+                playSound('correct');
+            };
+
+            clickInterval = setInterval(() => {
+                clickTimeLeft--;
+                document.getElementById('clickTime').textContent = clickTimeLeft;
+                if (clickTimeLeft <= 0) {
+                    clearInterval(clickInterval);
+                    target.onclick = null;
+                    showGameResult('クリッククリック', clickCount * 10);
+                }
+            }, 1000);
+        }
+
+        // スターキャッチゲーム
+        let starScore = 0;
+        let starTimeLeft = 30;
+        let starInterval = null;
+        let starSpawnInterval = null;
+
+        function startStarGame() {
+            starScore = 0;
+            starTimeLeft = 30;
+            document.getElementById('starScore').textContent = starScore;
+            document.getElementById('starTime').textContent = starTimeLeft;
+
+            const field = document.getElementById('starField');
+            field.innerHTML = '';
+
+            starInterval = setInterval(() => {
+                starTimeLeft--;
+                document.getElementById('starTime').textContent = starTimeLeft;
+                if (starTimeLeft <= 0) {
+                    clearInterval(starInterval);
+                    clearInterval(starSpawnInterval);
+                    showGameResult('ほしあつめ', starScore);
+                }
+            }, 1000);
+
+            starSpawnInterval = setInterval(() => {
+                spawnStar();
+            }, 1000);
+        }
+
+        function spawnStar() {
+            const field = document.getElementById('starField');
+            const star = document.createElement('div');
+            star.className = 'floating-star';
+            const stars = ['⭐', '🌟', '✨', '💫'];
+            star.textContent = stars[Math.floor(Math.random() * stars.length)];
+            star.style.left = Math.random() * 85 + '%';
+            star.style.top = Math.random() * 85 + '%';
+            star.style.animationDelay = Math.random() * 2 + 's';
+
+            star.onclick = () => {
+                star.remove();
+                starScore += 10;
+                document.getElementById('starScore').textContent = starScore;
+                playSound('correct');
+                createConfetti();
+            };
+
+            field.appendChild(star);
+
+            setTimeout(() => {
+                if (star.parentNode) {
+                    star.remove();
+                }
+            }, 3000);
+        }
+
+        // バブルタップゲーム
+        let bubbleScore = 0;
+        let bubbleTimeLeft = 30;
+        let bubbleInterval = null;
+        let bubbleSpawnInterval = null;
+
+        function startBubbleGame() {
+            bubbleScore = 0;
+            bubbleTimeLeft = 30;
+            document.getElementById('bubbleScore').textContent = bubbleScore;
+            document.getElementById('bubbleTime').textContent = bubbleTimeLeft;
+
+            const field = document.getElementById('bubbleField');
+            field.innerHTML = '';
+
+            bubbleInterval = setInterval(() => {
+                bubbleTimeLeft--;
+                document.getElementById('bubbleTime').textContent = bubbleTimeLeft;
+                if (bubbleTimeLeft <= 0) {
+                    clearInterval(bubbleInterval);
+                    clearInterval(bubbleSpawnInterval);
+                    showGameResult('バブルわり', bubbleScore);
+                }
+            }, 1000);
+
+            bubbleSpawnInterval = setInterval(() => {
+                spawnBubbleItem();
+            }, 800);
+        }
+
+        function spawnBubbleItem() {
+            const field = document.getElementById('bubbleField');
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble-item';
+            const colors = ['#FFB6C1', '#87CEEB', '#98FB98', '#DDA0DD', '#F0E68C', '#FFA07A'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            bubble.style.background = `radial-gradient(circle at 30% 30%, ${color}, ${color}88)`;
+            bubble.style.width = Math.random() * 40 + 50 + 'px';
+            bubble.style.height = bubble.style.width;
+            bubble.style.left = Math.random() * 85 + '%';
+            bubble.style.top = Math.random() * 85 + '%';
+            bubble.style.animationDelay = Math.random() * 2 + 's';
+            bubble.textContent = '🫧';
+
+            bubble.onclick = () => {
+                bubble.remove();
+                bubbleScore += 5;
+                document.getElementById('bubbleScore').textContent = bubbleScore;
+                playSound('correct');
+            };
+
+            field.appendChild(bubble);
+
+            setTimeout(() => {
+                if (bubble.parentNode) {
+                    bubble.remove();
+                }
+            }, 4000);
+        }
+
+        // マッチ3ゲーム
+        let match3Score = 0;
+        let match3Moves = 20;
+        let match3Grid = [];
+        let match3Selected = null;
+        const match3Emojis = ['🍎', '🍊', '🍋', '🍇', '🍓', '🍒'];
+
+        function startMatch3Game() {
+            match3Score = 0;
+            match3Moves = 20;
+            match3Selected = null;
+            document.getElementById('match3Score').textContent = match3Score;
+            document.getElementById('match3Moves').textContent = match3Moves;
+
+            initMatch3Grid();
+        }
+
+        function initMatch3Grid() {
+            match3Grid = [];
+            const gridEl = document.getElementById('match3Grid');
+            gridEl.innerHTML = '';
+
+            for (let i = 0; i < 36; i++) {
+                const emoji = match3Emojis[Math.floor(Math.random() * match3Emojis.length)];
+                match3Grid.push(emoji);
+
+                const cell = document.createElement('div');
+                cell.className = 'match3-cell';
+                cell.textContent = emoji;
+                cell.dataset.index = i;
+                cell.onclick = () => selectMatch3Cell(i, cell);
+                gridEl.appendChild(cell);
+            }
+        }
+
+        function selectMatch3Cell(index, cell) {
+            if (match3Selected === null) {
+                match3Selected = { index, cell };
+                cell.classList.add('selected');
+            } else {
+                if (match3Selected.index === index) {
+                    match3Selected.cell.classList.remove('selected');
+                    match3Selected = null;
+                    return;
+                }
+
+                const idx1 = match3Selected.index;
+                const idx2 = index;
+
+                if (isAdjacent(idx1, idx2)) {
+                    swapMatch3(idx1, idx2);
+                    match3Selected.cell.classList.remove('selected');
+                    match3Selected = null;
+
+                    setTimeout(() => {
+                        if (checkMatches()) {
+                            playSound('correct');
+                        } else {
+                            swapMatch3(idx1, idx2);
+                            playSound('wrong');
+                        }
+                    }, 300);
+
+                    match3Moves--;
+                    document.getElementById('match3Moves').textContent = match3Moves;
+
+                    if (match3Moves <= 0) {
+                        setTimeout(() => {
+                            showGameResult('えあわせ', match3Score);
+                        }, 1000);
+                    }
+                } else {
+                    match3Selected.cell.classList.remove('selected');
+                    match3Selected = { index, cell };
+                    cell.classList.add('selected');
+                }
+            }
+        }
+
+        function isAdjacent(idx1, idx2) {
+            const row1 = Math.floor(idx1 / 6);
+            const col1 = idx1 % 6;
+            const row2 = Math.floor(idx2 / 6);
+            const col2 = idx2 % 6;
+
+            return (Math.abs(row1 - row2) === 1 && col1 === col2) ||
+                   (Math.abs(col1 - col2) === 1 && row1 === row2);
+        }
+
+        function swapMatch3(idx1, idx2) {
+            const temp = match3Grid[idx1];
+            match3Grid[idx1] = match3Grid[idx2];
+            match3Grid[idx2] = temp;
+
+            const cells = document.querySelectorAll('.match3-cell');
+            cells[idx1].textContent = match3Grid[idx1];
+            cells[idx2].textContent = match3Grid[idx2];
+        }
+
+        function checkMatches() {
+            const cells = document.querySelectorAll('.match3-cell');
+            let hasMatch = false;
+            const matched = new Set();
+
+            // 横チェック
+            for (let row = 0; row < 6; row++) {
+                for (let col = 0; col < 4; col++) {
+                    const idx = row * 6 + col;
+                    if (match3Grid[idx] === match3Grid[idx + 1] && match3Grid[idx] === match3Grid[idx + 2]) {
+                        matched.add(idx);
+                        matched.add(idx + 1);
+                        matched.add(idx + 2);
+                        hasMatch = true;
+                    }
+                }
+            }
+
+            // 縦チェック
+            for (let col = 0; col < 6; col++) {
+                for (let row = 0; row < 4; row++) {
+                    const idx = row * 6 + col;
+                    if (match3Grid[idx] === match3Grid[idx + 6] && match3Grid[idx] === match3Grid[idx + 12]) {
+                        matched.add(idx);
+                        matched.add(idx + 6);
+                        matched.add(idx + 12);
+                        hasMatch = true;
+                    }
+                }
+            }
+
+            if (hasMatch) {
+                matched.forEach(idx => {
+                    cells[idx].classList.add('matched');
+                    setTimeout(() => {
+                        match3Grid[idx] = match3Emojis[Math.floor(Math.random() * match3Emojis.length)];
+                        cells[idx].textContent = match3Grid[idx];
+                        cells[idx].classList.remove('matched');
+                    }, 500);
+                });
+
+                match3Score += matched.size * 10;
+                document.getElementById('match3Score').textContent = match3Score;
+                createConfetti();
+            }
+
+            return hasMatch;
+        }
+
+        // お絵かきツール
+        let drawCanvas = null;
+        let drawCtx = null;
+        let isDrawing = false;
+        let currentColor = '#000000';
+        let currentSize = 5;
+
+        function startDrawGame() {
+            drawCanvas = document.getElementById('drawCanvas');
+            drawCtx = drawCanvas.getContext('2d');
+
+            // キャンバスをクリア
+            drawCtx.fillStyle = 'white';
+            drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+
+            // カラーパレット作成
+            const palette = document.getElementById('colorPalette');
+            palette.innerHTML = '';
+            const colors = ['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500', '#800080', '#FFC0CB'];
+
+            colors.forEach(color => {
+                const swatch = document.createElement('div');
+                swatch.className = 'color-swatch';
+                swatch.style.backgroundColor = color;
+                if (color === currentColor) swatch.classList.add('active');
+                swatch.onclick = () => {
+                    currentColor = color;
+                    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+                    swatch.classList.add('active');
+                };
+                palette.appendChild(swatch);
+            });
+
+            // マウスイベント
+            drawCanvas.addEventListener('mousedown', startDraw);
+            drawCanvas.addEventListener('mousemove', draw);
+            drawCanvas.addEventListener('mouseup', stopDraw);
+            drawCanvas.addEventListener('mouseout', stopDraw);
+
+            // タッチイベント
+            drawCanvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = drawCanvas.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                drawCtx.beginPath();
+                drawCtx.moveTo(x, y);
+                isDrawing = true;
+            });
+
+            drawCanvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if (!isDrawing) return;
+                const touch = e.touches[0];
+                const rect = drawCanvas.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                drawCtx.lineTo(x, y);
+                drawCtx.strokeStyle = currentColor;
+                drawCtx.lineWidth = currentSize;
+                drawCtx.lineCap = 'round';
+                drawCtx.stroke();
+            });
+
+            drawCanvas.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                isDrawing = false;
+            });
+        }
+
+        function startDraw(e) {
+            isDrawing = true;
+            const rect = drawCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            drawCtx.beginPath();
+            drawCtx.moveTo(x, y);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const rect = drawCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            drawCtx.lineTo(x, y);
+            drawCtx.strokeStyle = currentColor;
+            drawCtx.lineWidth = currentSize;
+            drawCtx.lineCap = 'round';
+            drawCtx.stroke();
+        }
+
+        function stopDraw() {
+            isDrawing = false;
+        }
+
+        function changeDrawSize(size) {
+            switch(size) {
+                case 'small': currentSize = 2; break;
+                case 'medium': currentSize = 5; break;
+                case 'large': currentSize = 10; break;
+            }
+        }
+
+        function clearCanvas() {
+            if (drawCtx) {
+                drawCtx.fillStyle = 'white';
+                drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+            }
         }
     </script>
 </body>
