@@ -370,6 +370,130 @@
             font-size: 80px;
             margin: 20px 0;
         }
+
+        /* ミニゲーム用スタイル */
+        .mole-hole {
+            background: #8B4513;
+            border-radius: 50%;
+            width: 100%;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 60px;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .mole-hole:hover {
+            transform: scale(1.1);
+        }
+
+        .mole-hole.active {
+            background: #A0522D;
+        }
+
+        .balloon {
+            position: absolute;
+            font-size: 50px;
+            cursor: pointer;
+            animation: floatUp 3s linear;
+            user-select: none;
+        }
+
+        @keyframes floatUp {
+            from {
+                bottom: -60px;
+            }
+            to {
+                bottom: 100%;
+            }
+        }
+
+        .falling-fruit {
+            position: absolute;
+            font-size: 40px;
+            user-select: none;
+            animation: fall linear;
+        }
+
+        @keyframes fall {
+            from {
+                top: -50px;
+            }
+            to {
+                top: 100%;
+            }
+        }
+
+        .color-choice-btn {
+            font-size: 24px;
+            padding: 15px 30px;
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .color-choice-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .memory-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .memory-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .memory-card.flipped {
+            background: white;
+        }
+
+        .memory-card.matched {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            cursor: default;
+        }
+
+        .play-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .play-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .play-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
     </style>
 </head>
 <body>
@@ -389,6 +513,7 @@
                 <small style="font-size: 18px;">せいかいすると⭐トークンがもらえるよ！</small>
             </p>
             <button class="start-btn" onclick="startGame()">スタート！</button>
+            <button class="shop-btn" onclick="showGames()">🎮 ゲーム</button>
             <button class="shop-btn" onclick="showShop()">🛍️ ショップ</button>
             <button class="shop-btn" onclick="showStats()">📊 とうけい</button>
         </div>
@@ -460,6 +585,68 @@
             <div class="shop-items" id="ownedItems"></div>
 
             <button class="back-btn" onclick="backToStart()">もどる</button>
+        </div>
+
+        <!-- ゲーム一覧画面 -->
+        <div id="gamesListScreen" class="hidden">
+            <h1>🎮 ゲームせんたく</h1>
+            <p style="font-size: 20px; color: #555; margin: 20px 0;">あそびたいゲームをえらんでね！</p>
+            <div class="shop-items" id="gamesList"></div>
+            <button class="back-btn" onclick="backToStart()">もどる</button>
+        </div>
+
+        <!-- もぐらたたきゲーム -->
+        <div id="moleGameScreen" class="hidden">
+            <h1>🔨 もぐらたたき</h1>
+            <div style="font-size: 24px; margin: 20px 0;">
+                スコア: <span id="moleScore">0</span> | じかん: <span id="moleTime">30</span>びょう
+            </div>
+            <div id="moleField" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 600px; margin: 30px auto;"></div>
+            <button class="back-btn" onclick="endMiniGame()">やめる</button>
+        </div>
+
+        <!-- バルーンポップゲーム -->
+        <div id="balloonGameScreen" class="hidden">
+            <h1>🎈 ふうせんわり</h1>
+            <div style="font-size: 24px; margin: 20px 0;">
+                スコア: <span id="balloonScore">0</span> | じかん: <span id="balloonTime">30</span>びょう
+            </div>
+            <div id="balloonField" style="position: relative; height: 500px; max-width: 600px; margin: 30px auto; background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%); border-radius: 20px; overflow: hidden;"></div>
+            <button class="back-btn" onclick="endMiniGame()">やめる</button>
+        </div>
+
+        <!-- フルーツキャッチゲーム -->
+        <div id="catchGameScreen" class="hidden">
+            <h1>🍎 フルーツキャッチ</h1>
+            <div style="font-size: 24px; margin: 20px 0;">
+                スコア: <span id="catchScore">0</span> | じかん: <span id="catchTime">30</span>びょう
+            </div>
+            <div id="catchField" style="position: relative; height: 500px; max-width: 600px; margin: 30px auto; background: linear-gradient(to bottom, #FFE5B4 0%, #FFF8DC 100%); border-radius: 20px; overflow: hidden;">
+                <div id="basket" style="position: absolute; bottom: 10px; width: 80px; height: 60px; font-size: 50px; left: 50%; transform: translateX(-50%);">🧺</div>
+            </div>
+            <button class="back-btn" onclick="endMiniGame()">やめる</button>
+        </div>
+
+        <!-- カラーマッチングゲーム -->
+        <div id="colorGameScreen" class="hidden">
+            <h1>🎨 いろあわせ</h1>
+            <div style="font-size: 24px; margin: 20px 0;">
+                スコア: <span id="colorScore">0</span> | もんだい: <span id="colorQuestion">1</span>/10
+            </div>
+            <div style="font-size: 32px; margin: 30px 0;">このいろは？</div>
+            <div id="colorBox" style="width: 200px; height: 200px; margin: 30px auto; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);"></div>
+            <div id="colorChoices" style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; max-width: 600px; margin: 30px auto;"></div>
+            <button class="back-btn" onclick="endMiniGame()">やめる</button>
+        </div>
+
+        <!-- メモリーゲーム -->
+        <div id="memoryGameScreen" class="hidden">
+            <h1>🃏 しんけいすいじゃく</h1>
+            <div style="font-size: 24px; margin: 20px 0;">
+                スコア: <span id="memoryScore">0</span> | のこり: <span id="memoryRemaining">8</span>ペア
+            </div>
+            <div id="memoryField" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; max-width: 600px; margin: 30px auto;"></div>
+            <button class="back-btn" onclick="endMiniGame()">やめる</button>
         </div>
     </div>
 
@@ -536,7 +723,12 @@
             { id: 'effect_sparkle', name: 'きらきら', icon: '✨', price: 20, type: 'effect' },
             { id: 'effect_heart', name: 'はーと', icon: '💕', price: 15, type: 'effect' },
             { id: 'crown', name: 'おうかん', icon: '👑', price: 50, type: 'special' },
-            { id: 'trophy', name: 'トロフィー', icon: '🏆', price: 40, type: 'special' }
+            { id: 'trophy', name: 'トロフィー', icon: '🏆', price: 40, type: 'special' },
+            { id: 'game_mole', name: 'もぐらたたき', icon: '🔨', price: 10, type: 'game' },
+            { id: 'game_balloon', name: 'ふうせんわり', icon: '🎈', price: 15, type: 'game' },
+            { id: 'game_catch', name: 'フルーツキャッチ', icon: '🍎', price: 20, type: 'game' },
+            { id: 'game_color', name: 'いろあわせ', icon: '🎨', price: 15, type: 'game' },
+            { id: 'game_memory', name: 'しんけいすいじゃく', icon: '🃏', price: 25, type: 'game' }
         ];
 
         // ゲームデータの初期化
@@ -786,6 +978,12 @@
             document.getElementById('resultScreen').classList.add('hidden');
             document.getElementById('shopScreen').classList.add('hidden');
             document.getElementById('statsScreen').classList.add('hidden');
+            document.getElementById('gamesListScreen').classList.add('hidden');
+            document.getElementById('moleGameScreen').classList.add('hidden');
+            document.getElementById('balloonGameScreen').classList.add('hidden');
+            document.getElementById('catchGameScreen').classList.add('hidden');
+            document.getElementById('colorGameScreen').classList.add('hidden');
+            document.getElementById('memoryGameScreen').classList.add('hidden');
         }
 
         // ショップアイテムを描画
@@ -793,7 +991,10 @@
             const container = document.getElementById('shopItems');
             container.innerHTML = '';
 
-            shopItems.forEach(item => {
+            // ゲーム以外のアイテムのみ表示
+            const nonGameItems = shopItems.filter(item => item.type !== 'game');
+
+            nonGameItems.forEach(item => {
                 const isOwned = gameData.ownedItems.includes(item.id);
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'shop-item' + (isOwned ? ' owned' : '');
@@ -804,6 +1005,39 @@
                     <div class="shop-item-price">⭐ ${item.price}</div>
                     ${isOwned ?
                         '<button class="buy-btn" disabled>かいずみ</button>' :
+                        `<button class="buy-btn" onclick="buyItem('${item.id}')" ${gameData.tokens < item.price ? 'disabled' : ''}>かう</button>`
+                    }
+                `;
+
+                container.appendChild(itemDiv);
+            });
+        }
+
+        // ゲーム一覧を表示
+        function showGames() {
+            hideAllScreens();
+            document.getElementById('gamesListScreen').classList.remove('hidden');
+            renderGamesList();
+        }
+
+        // ゲーム一覧を描画
+        function renderGamesList() {
+            const container = document.getElementById('gamesList');
+            container.innerHTML = '';
+
+            const games = shopItems.filter(item => item.type === 'game');
+
+            games.forEach(item => {
+                const isOwned = gameData.ownedItems.includes(item.id);
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'shop-item' + (isOwned ? ' owned' : '');
+
+                itemDiv.innerHTML = `
+                    <div class="shop-item-icon">${item.icon}</div>
+                    <div class="shop-item-name">${item.name}</div>
+                    <div class="shop-item-price">⭐ ${item.price}</div>
+                    ${isOwned ?
+                        `<button class="play-btn" onclick="startMiniGame('${item.id}')">あそぶ</button>` :
                         `<button class="buy-btn" onclick="buyItem('${item.id}')" ${gameData.tokens < item.price ? 'disabled' : ''}>かう</button>`
                     }
                 `;
@@ -828,6 +1062,7 @@
 
                 setTimeout(() => {
                     renderShopItems();
+                    renderGamesList();
                 }, 1500);
             }
         }
@@ -882,6 +1117,471 @@
                     }
                 });
             }
+        }
+
+        // ミニゲーム関連
+        let currentMiniGame = null;
+        let miniGameTimer = null;
+
+        // ミニゲームを開始
+        function startMiniGame(gameId) {
+            currentMiniGame = gameId;
+            hideAllScreens();
+
+            switch(gameId) {
+                case 'game_mole':
+                    document.getElementById('moleGameScreen').classList.remove('hidden');
+                    startMoleGame();
+                    break;
+                case 'game_balloon':
+                    document.getElementById('balloonGameScreen').classList.remove('hidden');
+                    startBalloonGame();
+                    break;
+                case 'game_catch':
+                    document.getElementById('catchGameScreen').classList.remove('hidden');
+                    startCatchGame();
+                    break;
+                case 'game_color':
+                    document.getElementById('colorGameScreen').classList.remove('hidden');
+                    startColorGame();
+                    break;
+                case 'game_memory':
+                    document.getElementById('memoryGameScreen').classList.remove('hidden');
+                    startMemoryGame();
+                    break;
+            }
+        }
+
+        // ミニゲーム終了
+        function endMiniGame() {
+            if (miniGameTimer) {
+                clearInterval(miniGameTimer);
+                miniGameTimer = null;
+            }
+            currentMiniGame = null;
+            showGames();
+        }
+
+        // もぐらたたきゲーム
+        let moleScore = 0;
+        let moleTimeLeft = 30;
+        let moleInterval = null;
+        let molePopInterval = null;
+
+        function startMoleGame() {
+            moleScore = 0;
+            moleTimeLeft = 30;
+            document.getElementById('moleScore').textContent = moleScore;
+            document.getElementById('moleTime').textContent = moleTimeLeft;
+
+            const field = document.getElementById('moleField');
+            field.innerHTML = '';
+
+            // 9つの穴を作成
+            for (let i = 0; i < 9; i++) {
+                const hole = document.createElement('div');
+                hole.className = 'mole-hole';
+                hole.dataset.index = i;
+                hole.onclick = () => hitMole(hole);
+                field.appendChild(hole);
+            }
+
+            // タイマー開始
+            moleInterval = setInterval(() => {
+                moleTimeLeft--;
+                document.getElementById('moleTime').textContent = moleTimeLeft;
+                if (moleTimeLeft <= 0) {
+                    endMoleGame();
+                }
+            }, 1000);
+
+            // もぐらをランダムに出現
+            molePopInterval = setInterval(() => {
+                const holes = document.querySelectorAll('.mole-hole');
+                // 既存のもぐらをクリア
+                holes.forEach(h => {
+                    h.textContent = '';
+                    h.classList.remove('active');
+                });
+
+                // ランダムに2-3個出現
+                const count = Math.floor(Math.random() * 2) + 2;
+                const indices = [];
+                while (indices.length < count) {
+                    const idx = Math.floor(Math.random() * 9);
+                    if (!indices.includes(idx)) {
+                        indices.push(idx);
+                    }
+                }
+
+                indices.forEach(idx => {
+                    holes[idx].textContent = '🐹';
+                    holes[idx].classList.add('active');
+                });
+            }, 800);
+        }
+
+        function hitMole(hole) {
+            if (hole.classList.contains('active')) {
+                hole.textContent = '💥';
+                hole.classList.remove('active');
+                moleScore += 10;
+                document.getElementById('moleScore').textContent = moleScore;
+                playSound('correct');
+            }
+        }
+
+        function endMoleGame() {
+            clearInterval(moleInterval);
+            clearInterval(molePopInterval);
+            showGameResult('もぐらたたき', moleScore);
+        }
+
+        // バルーンポップゲーム
+        let balloonScore = 0;
+        let balloonTimeLeft = 30;
+        let balloonInterval = null;
+        let balloonSpawnInterval = null;
+
+        function startBalloonGame() {
+            balloonScore = 0;
+            balloonTimeLeft = 30;
+            document.getElementById('balloonScore').textContent = balloonScore;
+            document.getElementById('balloonTime').textContent = balloonTimeLeft;
+
+            const field = document.getElementById('balloonField');
+            field.innerHTML = '';
+
+            // タイマー開始
+            balloonInterval = setInterval(() => {
+                balloonTimeLeft--;
+                document.getElementById('balloonTime').textContent = balloonTimeLeft;
+                if (balloonTimeLeft <= 0) {
+                    endBalloonGame();
+                }
+            }, 1000);
+
+            // 風船を生成
+            balloonSpawnInterval = setInterval(() => {
+                spawnBalloon();
+            }, 600);
+        }
+
+        function spawnBalloon() {
+            const field = document.getElementById('balloonField');
+            const balloon = document.createElement('div');
+            balloon.className = 'balloon';
+            const colors = ['🎈', '🎈', '🎈', '🟥', '🟦', '🟩', '🟨', '🟪'];
+            balloon.textContent = colors[Math.floor(Math.random() * colors.length)];
+            balloon.style.left = Math.random() * 90 + '%';
+
+            balloon.onclick = () => {
+                balloon.remove();
+                balloonScore += 5;
+                document.getElementById('balloonScore').textContent = balloonScore;
+                playSound('correct');
+                createConfetti();
+            };
+
+            field.appendChild(balloon);
+
+            setTimeout(() => {
+                if (balloon.parentNode) {
+                    balloon.remove();
+                }
+            }, 3000);
+        }
+
+        function endBalloonGame() {
+            clearInterval(balloonInterval);
+            clearInterval(balloonSpawnInterval);
+            showGameResult('ふうせんわり', balloonScore);
+        }
+
+        // フルーツキャッチゲーム
+        let catchScore = 0;
+        let catchTimeLeft = 30;
+        let catchInterval = null;
+        let catchSpawnInterval = null;
+        let basketX = 50;
+
+        function startCatchGame() {
+            catchScore = 0;
+            catchTimeLeft = 30;
+            basketX = 50;
+            document.getElementById('catchScore').textContent = catchScore;
+            document.getElementById('catchTime').textContent = catchTimeLeft;
+
+            const field = document.getElementById('catchField');
+            const basket = document.getElementById('basket');
+
+            // マウス/タッチでバスケットを動かす
+            let isDragging = false;
+
+            const moveBasket = (clientX) => {
+                const fieldRect = field.getBoundingClientRect();
+                const relativeX = clientX - fieldRect.left;
+                const percentage = (relativeX / fieldRect.width) * 100;
+                basketX = Math.max(10, Math.min(90, percentage));
+                basket.style.left = basketX + '%';
+            };
+
+            field.addEventListener('mousemove', (e) => {
+                moveBasket(e.clientX);
+            });
+
+            field.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                moveBasket(e.touches[0].clientX);
+            });
+
+            // 既存のフルーツをクリア
+            const existingFruits = field.querySelectorAll('.falling-fruit');
+            existingFruits.forEach(f => f.remove());
+
+            // タイマー開始
+            catchInterval = setInterval(() => {
+                catchTimeLeft--;
+                document.getElementById('catchTime').textContent = catchTimeLeft;
+                if (catchTimeLeft <= 0) {
+                    endCatchGame();
+                }
+            }, 1000);
+
+            // フルーツを生成
+            catchSpawnInterval = setInterval(() => {
+                spawnFruit();
+            }, 800);
+        }
+
+        function spawnFruit() {
+            const field = document.getElementById('catchField');
+            const fruit = document.createElement('div');
+            fruit.className = 'falling-fruit';
+            const fruits = ['🍎', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍑'];
+            const isBomb = Math.random() < 0.2; // 20%の確率で爆弾
+            fruit.textContent = isBomb ? '💣' : fruits[Math.floor(Math.random() * fruits.length)];
+            fruit.dataset.isBomb = isBomb;
+            fruit.style.left = Math.random() * 90 + '%';
+            fruit.style.animationDuration = (Math.random() * 2 + 3) + 's';
+
+            field.appendChild(fruit);
+
+            const checkCatch = setInterval(() => {
+                if (!fruit.parentNode) {
+                    clearInterval(checkCatch);
+                    return;
+                }
+
+                const fruitRect = fruit.getBoundingClientRect();
+                const basket = document.getElementById('basket');
+                const basketRect = basket.getBoundingClientRect();
+
+                if (fruitRect.bottom >= basketRect.top &&
+                    fruitRect.left < basketRect.right &&
+                    fruitRect.right > basketRect.left) {
+                    fruit.remove();
+                    clearInterval(checkCatch);
+
+                    if (fruit.dataset.isBomb === 'true') {
+                        catchScore = Math.max(0, catchScore - 10);
+                        playSound('wrong');
+                    } else {
+                        catchScore += 10;
+                        playSound('correct');
+                    }
+                    document.getElementById('catchScore').textContent = catchScore;
+                }
+            }, 50);
+
+            setTimeout(() => {
+                if (fruit.parentNode) {
+                    fruit.remove();
+                    clearInterval(checkCatch);
+                }
+            }, 5000);
+        }
+
+        function endCatchGame() {
+            clearInterval(catchInterval);
+            clearInterval(catchSpawnInterval);
+            showGameResult('フルーツキャッチ', catchScore);
+        }
+
+        // カラーマッチングゲーム
+        let colorScore = 0;
+        let colorQuestionNum = 1;
+        const colorData = [
+            { name: 'あか', color: '#FF0000' },
+            { name: 'あお', color: '#0000FF' },
+            { name: 'きいろ', color: '#FFFF00' },
+            { name: 'みどり', color: '#00FF00' },
+            { name: 'オレンジ', color: '#FFA500' },
+            { name: 'むらさき', color: '#800080' },
+            { name: 'ピンク', color: '#FFC0CB' },
+            { name: 'ちゃいろ', color: '#8B4513' }
+        ];
+
+        function startColorGame() {
+            colorScore = 0;
+            colorQuestionNum = 1;
+            document.getElementById('colorScore').textContent = colorScore;
+            nextColorQuestion();
+        }
+
+        function nextColorQuestion() {
+            if (colorQuestionNum > 10) {
+                showGameResult('いろあわせ', colorScore);
+                return;
+            }
+
+            document.getElementById('colorQuestion').textContent = colorQuestionNum;
+
+            const correctColor = colorData[Math.floor(Math.random() * colorData.length)];
+            document.getElementById('colorBox').style.backgroundColor = correctColor.color;
+
+            const choices = [correctColor];
+            while (choices.length < 4) {
+                const randomColor = colorData[Math.floor(Math.random() * colorData.length)];
+                if (!choices.find(c => c.name === randomColor.name)) {
+                    choices.push(randomColor);
+                }
+            }
+
+            const shuffled = choices.sort(() => Math.random() - 0.5);
+            const choicesContainer = document.getElementById('colorChoices');
+            choicesContainer.innerHTML = '';
+
+            shuffled.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'color-choice-btn';
+                button.textContent = choice.name;
+                button.onclick = () => checkColorAnswer(choice.name === correctColor.name, button);
+                choicesContainer.appendChild(button);
+            });
+        }
+
+        function checkColorAnswer(isCorrect, button) {
+            const allButtons = document.querySelectorAll('.color-choice-btn');
+            allButtons.forEach(btn => btn.disabled = true);
+
+            if (isCorrect) {
+                button.style.background = '#84fab0';
+                colorScore += 10;
+                document.getElementById('colorScore').textContent = colorScore;
+                playSound('correct');
+            } else {
+                button.style.background = '#ff9a9e';
+                playSound('wrong');
+            }
+
+            setTimeout(() => {
+                colorQuestionNum++;
+                nextColorQuestion();
+            }, 1000);
+        }
+
+        // メモリーゲーム
+        let memoryScore = 0;
+        let memoryFlipped = [];
+        let memoryMatched = [];
+        const memoryEmojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'];
+
+        function startMemoryGame() {
+            memoryScore = 0;
+            memoryFlipped = [];
+            memoryMatched = [];
+            document.getElementById('memoryScore').textContent = memoryScore;
+            document.getElementById('memoryRemaining').textContent = 8;
+
+            const field = document.getElementById('memoryField');
+            field.innerHTML = '';
+
+            // カードの配列を作成（各絵文字2枚ずつ）
+            const cards = [];
+            memoryEmojis.forEach(emoji => {
+                cards.push({ emoji, id: Math.random() });
+                cards.push({ emoji, id: Math.random() });
+            });
+
+            // シャッフル
+            const shuffled = cards.sort(() => Math.random() - 0.5);
+
+            shuffled.forEach((card, index) => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'memory-card';
+                cardDiv.dataset.emoji = card.emoji;
+                cardDiv.dataset.index = index;
+                cardDiv.textContent = '?';
+                cardDiv.onclick = () => flipCard(cardDiv);
+                field.appendChild(cardDiv);
+            });
+        }
+
+        function flipCard(card) {
+            if (memoryFlipped.length >= 2 || card.classList.contains('flipped') || card.classList.contains('matched')) {
+                return;
+            }
+
+            card.classList.add('flipped');
+            card.textContent = card.dataset.emoji;
+            memoryFlipped.push(card);
+
+            if (memoryFlipped.length === 2) {
+                setTimeout(checkMemoryMatch, 500);
+            }
+        }
+
+        function checkMemoryMatch() {
+            const [card1, card2] = memoryFlipped;
+
+            if (card1.dataset.emoji === card2.dataset.emoji) {
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                memoryMatched.push(card1, card2);
+                memoryScore += 20;
+                document.getElementById('memoryScore').textContent = memoryScore;
+                document.getElementById('memoryRemaining').textContent = 8 - (memoryMatched.length / 2);
+                playSound('correct');
+                createConfetti();
+
+                if (memoryMatched.length === 16) {
+                    setTimeout(() => {
+                        showGameResult('しんけいすいじゃく', memoryScore);
+                    }, 1000);
+                }
+            } else {
+                card1.classList.remove('flipped');
+                card2.classList.remove('flipped');
+                card1.textContent = '?';
+                card2.textContent = '?';
+                playSound('wrong');
+            }
+
+            memoryFlipped = [];
+        }
+
+        // ゲーム結果を表示
+        function showGameResult(gameName, score) {
+            const popup = document.createElement('div');
+            popup.className = 'reward-popup';
+            popup.innerHTML = `
+                <h2 style="color: #667eea; margin-bottom: 20px;">🎉 ${gameName} けっか</h2>
+                <div style="font-size: 48px; font-weight: bold; margin: 20px 0; color: #f5576c;">
+                    ${score} てん！
+                </div>
+                <div style="font-size: 24px; color: #555;">
+                    ${score >= 100 ? 'すごい！さいこう！' : score >= 50 ? 'よくできました！' : 'またチャレンジしてね！'}
+                </div>
+            `;
+
+            document.body.appendChild(popup);
+            createConfetti();
+
+            setTimeout(() => {
+                popup.remove();
+                endMiniGame();
+            }, 3000);
         }
     </script>
 </body>
