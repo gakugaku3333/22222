@@ -653,7 +653,8 @@
                 ただしいこたえをえらんでね 💕<br>
                 <small style="font-size: 18px;">せいかいすると⭐トークンがもらえるよ！</small>
             </p>
-            <button class="start-btn" onclick="startGame()">スタート！</button>
+            <button class="start-btn" onclick="startGame()">カタカナクイズ</button>
+            <button class="start-btn" onclick="showMathSelect()" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">さんすう</button>
             <button class="shop-btn" onclick="showGames()">🎮 ゲーム</button>
             <button class="shop-btn" onclick="showShop()">🛍️ ショップ</button>
             <button class="shop-btn" onclick="showStats()">📊 とうけい</button>
@@ -846,6 +847,70 @@
                 <canvas id="drawCanvas" class="drawing-canvas" width="600" height="400"></canvas>
             </div>
             <button class="back-btn" onclick="endMiniGame()">もどる</button>
+        </div>
+
+        <!-- 算数ゲーム選択画面 -->
+        <div id="mathSelectScreen" class="hidden">
+            <h1>🔢 さんすう</h1>
+            <div class="emoji">➕➖✖️➗</div>
+            <p class="intro-text">
+                どのけいさんをべんきょうする？<br>
+                <small style="font-size: 18px;">せいかいすると⭐トークンがもらえるよ！</small>
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 600px; margin: 30px auto;">
+                <button class="start-btn" onclick="showMathLevel('addition')" style="font-size: 32px;">➕ たしざん</button>
+                <button class="start-btn" onclick="showMathLevel('subtraction')" style="font-size: 32px;">➖ ひきざん</button>
+                <button class="start-btn" onclick="showMathLevel('multiplication')" style="font-size: 32px;">✖️ かけざん</button>
+                <button class="start-btn" onclick="showMathLevel('division')" style="font-size: 32px;">➗ わりざん</button>
+            </div>
+            <button class="back-btn" onclick="backToStart()">もどる</button>
+        </div>
+
+        <!-- 算数レベル選択画面 -->
+        <div id="mathLevelScreen" class="hidden">
+            <h1 id="mathLevelTitle">レベルをえらぶ</h1>
+            <div id="mathLevelButtons" style="display: flex; flex-direction: column; gap: 15px; max-width: 500px; margin: 30px auto;"></div>
+            <button class="back-btn" onclick="showMathSelect()">もどる</button>
+        </div>
+
+        <!-- 算数ゲーム画面 -->
+        <div id="mathGameScreen" class="hidden">
+            <h1 id="mathGameTitle">✨ さんすう ✨</h1>
+
+            <div class="score-board">
+                <div class="score-item">
+                    スコア: <span id="mathScore">0</span>
+                </div>
+                <div class="token-display">
+                    ⭐ <span id="mathTokens">0</span>
+                </div>
+                <div class="score-item">
+                    もんだい: <span id="mathQuestionNum">1</span>/10
+                </div>
+            </div>
+
+            <div style="font-size: 80px; font-weight: bold; color: #43e97b; margin: 40px 0; text-shadow: 3px 3px 6px rgba(67, 233, 123, 0.3);" id="mathProblem"></div>
+
+            <div class="question">こたえは？</div>
+
+            <div class="choices" id="mathChoices"></div>
+
+            <div class="feedback" id="mathFeedback"></div>
+        </div>
+
+        <!-- 算数結果画面 -->
+        <div id="mathResultScreen" class="hidden">
+            <h1>🎉 おつかれさま！ 🎉</h1>
+            <div class="emoji" id="mathResultEmoji"></div>
+            <div style="font-size: 48px; margin: 30px 0; font-weight: bold; color: #43e97b;">
+                スコア: <span id="mathFinalScore"></span>
+            </div>
+            <div style="font-size: 36px; margin: 20px 0; font-weight: bold; color: #ffd700;">
+                ⭐ <span id="mathEarnedTokens"></span> トークンゲット！
+            </div>
+            <div id="mathResultMessage" style="font-size: 32px; color: #555; margin: 20px 0;"></div>
+            <button class="start-btn" onclick="showMathSelect()">もういちど！</button>
+            <button class="back-btn" onclick="backToStart()">もどる</button>
         </div>
     </div>
 
@@ -1193,6 +1258,10 @@
             document.getElementById('bubbleGameScreen').classList.add('hidden');
             document.getElementById('match3GameScreen').classList.add('hidden');
             document.getElementById('drawGameScreen').classList.add('hidden');
+            document.getElementById('mathSelectScreen').classList.add('hidden');
+            document.getElementById('mathLevelScreen').classList.add('hidden');
+            document.getElementById('mathGameScreen').classList.add('hidden');
+            document.getElementById('mathResultScreen').classList.add('hidden');
         }
 
         // ショップアイテムを描画
@@ -2219,6 +2288,285 @@
             if (drawCtx) {
                 drawCtx.fillStyle = 'white';
                 drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+            }
+        }
+
+        // 算数ゲーム関連
+        let mathType = '';
+        let mathLevel = 0;
+        let mathScore = 0;
+        let mathCurrentQuestion = 0;
+        let mathTotalQuestions = 10;
+        let mathCorrectAnswer = 0;
+        let mathTokensEarned = 0;
+
+        const mathLevels = {
+            addition: [
+                { name: 'レベル1: 1けた+1けた (こたえ1けた)', desc: '1+2=3' },
+                { name: 'レベル2: 1けた+1けた (こたえ2けた)', desc: '7+8=15' },
+                { name: 'レベル3: 2けた+1けた', desc: '12+3=15' },
+                { name: 'レベル4: 2けた+2けた', desc: '12+34=46' }
+            ],
+            subtraction: [
+                { name: 'レベル1: 1けた-1けた', desc: '5-2=3' },
+                { name: 'レベル2: 2けた-1けた', desc: '15-3=12' },
+                { name: 'レベル3: 2けた-2けた', desc: '25-13=12' }
+            ],
+            multiplication: [
+                { name: 'レベル1: 1けた×1けた (こたえ1けた)', desc: '2×3=6' },
+                { name: 'レベル2: 1けた×1けた (こたえ2けた)', desc: '7×8=56' },
+                { name: 'レベル3: くく (1-9のだん)', desc: '6×7=42' },
+                { name: 'レベル4: 2けた×1けた', desc: '12×3=36' }
+            ],
+            division: [
+                { name: 'レベル1: 1けた÷1けた', desc: '6÷2=3' },
+                { name: 'レベル2: 2けた÷1けた (わりきれる)', desc: '12÷3=4' },
+                { name: 'レベル3: 2けた÷1けた (あまりあり)', desc: '13÷3=4あまり1' }
+            ]
+        };
+
+        const mathTitles = {
+            addition: '➕ たしざん',
+            subtraction: '➖ ひきざん',
+            multiplication: '✖️ かけざん',
+            division: '➗ わりざん'
+        };
+
+        // 算数選択画面を表示
+        function showMathSelect() {
+            hideAllScreens();
+            document.getElementById('mathSelectScreen').classList.remove('hidden');
+        }
+
+        // 算数レベル選択画面を表示
+        function showMathLevel(type) {
+            mathType = type;
+            hideAllScreens();
+            document.getElementById('mathLevelScreen').classList.remove('hidden');
+            document.getElementById('mathLevelTitle').textContent = mathTitles[type] + ' - レベルをえらぶ';
+
+            const container = document.getElementById('mathLevelButtons');
+            container.innerHTML = '';
+
+            mathLevels[type].forEach((level, index) => {
+                const button = document.createElement('button');
+                button.className = 'start-btn';
+                button.style.fontSize = '24px';
+                button.innerHTML = `
+                    ${level.name}<br>
+                    <small style="font-size: 18px; opacity: 0.8;">れい: ${level.desc}</small>
+                `;
+                button.onclick = () => startMathGame(type, index);
+                container.appendChild(button);
+            });
+        }
+
+        // 算数ゲーム開始
+        function startMathGame(type, level) {
+            mathType = type;
+            mathLevel = level;
+            mathScore = 0;
+            mathCurrentQuestion = 0;
+            mathTokensEarned = 0;
+
+            hideAllScreens();
+            document.getElementById('mathGameScreen').classList.remove('hidden');
+            document.getElementById('mathGameTitle').textContent = mathTitles[type];
+            document.getElementById('mathScore').textContent = mathScore;
+            document.getElementById('mathTokens').textContent = gameData.tokens;
+
+            nextMathQuestion();
+        }
+
+        // 次の算数問題
+        function nextMathQuestion() {
+            if (mathCurrentQuestion >= mathTotalQuestions) {
+                showMathResult();
+                return;
+            }
+
+            mathCurrentQuestion++;
+            document.getElementById('mathQuestionNum').textContent = mathCurrentQuestion;
+            document.getElementById('mathFeedback').textContent = '';
+            document.getElementById('mathFeedback').className = 'feedback';
+
+            // 問題生成
+            const problem = generateMathProblem(mathType, mathLevel);
+            document.getElementById('mathProblem').textContent = problem.text;
+            mathCorrectAnswer = problem.answer;
+
+            // 選択肢作成
+            const choices = createMathChoices(problem.answer, mathType, mathLevel);
+            const choicesContainer = document.getElementById('mathChoices');
+            choicesContainer.innerHTML = '';
+
+            choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-btn';
+                button.textContent = choice;
+                button.onclick = () => checkMathAnswer(choice, button);
+                choicesContainer.appendChild(button);
+            });
+        }
+
+        // 算数問題生成
+        function generateMathProblem(type, level) {
+            let num1, num2, answer, text;
+
+            if (type === 'addition') {
+                if (level === 0) { // 1桁+1桁(答え1桁)
+                    num1 = Math.floor(Math.random() * 5) + 1;
+                    num2 = Math.floor(Math.random() * (9 - num1)) + 1;
+                } else if (level === 1) { // 1桁+1桁(答え2桁)
+                    num1 = Math.floor(Math.random() * 5) + 5;
+                    num2 = Math.floor(Math.random() * 5) + 5;
+                } else if (level === 2) { // 2桁+1桁
+                    num1 = Math.floor(Math.random() * 90) + 10;
+                    num2 = Math.floor(Math.random() * 9) + 1;
+                } else { // 2桁+2桁
+                    num1 = Math.floor(Math.random() * 90) + 10;
+                    num2 = Math.floor(Math.random() * 90) + 10;
+                }
+                answer = num1 + num2;
+                text = `${num1} + ${num2}`;
+            } else if (type === 'subtraction') {
+                if (level === 0) { // 1桁-1桁
+                    num1 = Math.floor(Math.random() * 5) + 5;
+                    num2 = Math.floor(Math.random() * num1);
+                } else if (level === 1) { // 2桁-1桁
+                    num1 = Math.floor(Math.random() * 90) + 10;
+                    num2 = Math.floor(Math.random() * 9) + 1;
+                } else { // 2桁-2桁
+                    num1 = Math.floor(Math.random() * 90) + 10;
+                    num2 = Math.floor(Math.random() * num1);
+                }
+                answer = num1 - num2;
+                text = `${num1} - ${num2}`;
+            } else if (type === 'multiplication') {
+                if (level === 0) { // 1桁×1桁(答え1桁)
+                    num1 = Math.floor(Math.random() * 3) + 1;
+                    num2 = Math.floor(Math.random() * 3) + 1;
+                } else if (level === 1) { // 1桁×1桁(答え2桁)
+                    num1 = Math.floor(Math.random() * 5) + 4;
+                    num2 = Math.floor(Math.random() * 5) + 4;
+                } else if (level === 2) { // 九九
+                    num1 = Math.floor(Math.random() * 9) + 1;
+                    num2 = Math.floor(Math.random() * 9) + 1;
+                } else { // 2桁×1桁
+                    num1 = Math.floor(Math.random() * 90) + 10;
+                    num2 = Math.floor(Math.random() * 9) + 1;
+                }
+                answer = num1 * num2;
+                text = `${num1} × ${num2}`;
+            } else if (type === 'division') {
+                if (level === 0) { // 1桁÷1桁
+                    num2 = Math.floor(Math.random() * 8) + 2;
+                    answer = Math.floor(Math.random() * 9) + 1;
+                    num1 = num2 * answer;
+                } else if (level === 1) { // 2桁÷1桁(割り切れる)
+                    num2 = Math.floor(Math.random() * 8) + 2;
+                    answer = Math.floor(Math.random() * 9) + 1;
+                    num1 = num2 * answer;
+                } else { // 2桁÷1桁(余りあり)
+                    num2 = Math.floor(Math.random() * 8) + 2;
+                    const quotient = Math.floor(Math.random() * 9) + 1;
+                    const remainder = Math.floor(Math.random() * (num2 - 1)) + 1;
+                    num1 = num2 * quotient + remainder;
+                    answer = quotient;
+                    text = `${num1} ÷ ${num2}`;
+                    return { text: text + ' (あまりはいくつ？)', answer: remainder };
+                }
+                answer = num1 / num2;
+                text = `${num1} ÷ ${num2}`;
+            }
+
+            return { text, answer };
+        }
+
+        // 算数の選択肢作成
+        function createMathChoices(correctAnswer, type, level) {
+            const choices = [correctAnswer];
+            const range = type === 'addition' && level >= 2 ? 20 :
+                         type === 'multiplication' && level === 3 ? 30 : 10;
+
+            while (choices.length < 4) {
+                const offset = Math.floor(Math.random() * range) - Math.floor(range / 2);
+                let wrongAnswer = correctAnswer + offset;
+                if (wrongAnswer !== correctAnswer && wrongAnswer >= 0 && !choices.includes(wrongAnswer)) {
+                    choices.push(wrongAnswer);
+                }
+            }
+
+            return choices.sort(() => Math.random() - 0.5);
+        }
+
+        // 算数の答えチェック
+        function checkMathAnswer(selected, button) {
+            const allButtons = document.querySelectorAll('#mathChoices .choice-btn');
+            allButtons.forEach(btn => btn.disabled = true);
+
+            const feedback = document.getElementById('mathFeedback');
+
+            gameData.totalAnswered++;
+
+            if (selected === mathCorrectAnswer) {
+                button.classList.add('correct');
+                feedback.textContent = '🎉 せいかい！すごい！';
+                feedback.className = 'feedback correct';
+                mathScore += 10;
+                document.getElementById('mathScore').textContent = mathScore;
+
+                const earnedTokens = 2;
+                mathTokensEarned += earnedTokens;
+                gameData.tokens += earnedTokens;
+                gameData.totalCorrect++;
+                document.getElementById('mathTokens').textContent = gameData.tokens;
+                updateTokenDisplay();
+                saveGameData(gameData);
+
+                createConfetti();
+                playSound('correct');
+            } else {
+                button.classList.add('wrong');
+                feedback.textContent = '😢 ざんねん！こたえは「' + mathCorrectAnswer + '」だよ';
+                feedback.className = 'feedback wrong';
+                playSound('wrong');
+            }
+
+            saveGameData(gameData);
+
+            setTimeout(() => {
+                allButtons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.classList.remove('correct', 'wrong');
+                });
+                nextMathQuestion();
+            }, 2500);
+        }
+
+        // 算数結果表示
+        function showMathResult() {
+            hideAllScreens();
+            document.getElementById('mathResultScreen').classList.remove('hidden');
+            document.getElementById('mathFinalScore').textContent = mathScore + ' / ' + (mathTotalQuestions * 10);
+            document.getElementById('mathEarnedTokens').textContent = mathTokensEarned;
+
+            const resultEmoji = document.getElementById('mathResultEmoji');
+            const resultMessage = document.getElementById('mathResultMessage');
+
+            if (mathScore >= 90) {
+                resultEmoji.textContent = '🏆👑✨';
+                resultMessage.textContent = 'かんぺき！！とってもすごい！';
+                createConfetti();
+            } else if (mathScore >= 70) {
+                resultEmoji.textContent = '🌟😊💕';
+                resultMessage.textContent = 'とってもよくできました！';
+            } else if (mathScore >= 50) {
+                resultEmoji.textContent = '🌈😄';
+                resultMessage.textContent = 'よくがんばったね！';
+            } else {
+                resultEmoji.textContent = '💪😊';
+                resultMessage.textContent = 'もういちどちょうせんしてみよう！';
             }
         }
     </script>
